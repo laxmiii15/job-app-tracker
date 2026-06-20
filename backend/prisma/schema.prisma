@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum JobType {
+  INTERNSHIP
+  FULL_TIME
+  PART_TIME
+}
+
+enum ApplicationStatus {
+  PENDING
+  SHORTLISTED
+  INTERVIEWED
+  HIRED
+  REJECTED
+  AUTO_DELETE
+}
+
+model Application {
+  id          String            @id @default(uuid()) @db.Uuid
+  companyName String            @map("company_name")
+  jobTitle    String            @map("job_title")
+  jobType     JobType           @map("job_type")
+  status      ApplicationStatus @default(PENDING)
+  appliedDate DateTime          @map("applied_date")
+  notes       String?
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  stageLogs   StageLog[]
+
+  @@index([status])
+  @@index([jobType])
+  @@map("applications")
+}
+
+// Append-only history of stage (status) transitions for an application.
+model StageLog {
+  id            String             @id @default(uuid()) @db.Uuid
+  applicationId String             @map("application_id") @db.Uuid
+  application   Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  fromStatus    ApplicationStatus? @map("from_status")
+  toStatus      ApplicationStatus  @map("to_status")
+  changedAt     DateTime           @default(now()) @map("changed_at")
+
+  @@index([applicationId])
+  @@map("stage_logs")
+}

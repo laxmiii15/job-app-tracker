@@ -1,0 +1,94 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Application {
+  appliedDate: DateTime!
+  companyName: String!
+  createdAt: DateTime!
+  id: ID!
+  jobTitle: String!
+  jobType: JobType!
+  notes: String
+  stageLogs: [StageLog!]!
+  status: ApplicationStatus!
+  updatedAt: DateTime!
+}
+
+input ApplicationFilterInput {
+  jobType: JobType
+  limit: Int = 10
+  page: Int = 1
+  search: String
+  status: ApplicationStatus
+}
+
+"""The stage of a job application in the hiring pipeline."""
+enum ApplicationStatus {
+  AUTO_DELETE
+  HIRED
+  INTERVIEWED
+  PENDING
+  REJECTED
+  SHORTLISTED
+}
+
+input CreateApplicationInput {
+  appliedDate: DateTime!
+  companyName: String!
+  jobTitle: String!
+  jobType: JobType!
+  notes: String
+  status: ApplicationStatus
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+"""The employment type for a job application."""
+enum JobType {
+  FULL_TIME
+  INTERNSHIP
+  PART_TIME
+}
+
+type Mutation {
+  createApplication(input: CreateApplicationInput!): Application!
+  deleteApplication(id: String!): Boolean!
+  updateApplication(id: String!, input: UpdateApplicationInput!): Application!
+}
+
+type PaginatedApplications {
+  data: [Application!]!
+  meta: PaginationMeta!
+}
+
+type PaginationMeta {
+  limit: Int!
+  page: Int!
+  total: Int!
+  totalPages: Int!
+}
+
+type Query {
+  application(id: String!): Application!
+  applications(filter: ApplicationFilterInput): PaginatedApplications!
+}
+
+type StageLog {
+  changedAt: DateTime!
+  fromStatus: ApplicationStatus
+  id: ID!
+  toStatus: ApplicationStatus!
+}
+
+input UpdateApplicationInput {
+  appliedDate: DateTime
+  companyName: String
+  jobTitle: String
+  jobType: JobType
+  notes: String
+  status: ApplicationStatus
+}
