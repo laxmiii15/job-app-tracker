@@ -55,6 +55,26 @@ Built with **Next.js**, **NestJS**, **GraphQL (code-first)**, **Prisma**, and
 
 ---
 
+## 🏛️ Architecture
+
+A full-stack app with a Next.js + TypeScript frontend and a NestJS + TypeScript
+backend that communicate over GraphQL, with PostgreSQL through Prisma for
+storage. The frontend owns the UI — table and Kanban views, drag-and-drop stage
+changes, modals, search, filtering, and loading/error states — while the backend
+exposes typed queries and mutations for all CRUD. GraphQL was chosen so every
+view requests exactly the `Application` shape it needs (including nested stage
+history) from one typed contract, and a separate append-only `stage_logs` table
+records each status change with a timestamp. Validation runs on both sides: the
+form gives quick feedback, but the backend validates every mutation before
+saving and stays the source of truth, so the UI always refreshes from the API
+after any change. Postgres + Prisma fits the one-to-many history relation
+cleanly and gives typed queries plus versioned migrations, with Docker Compose
+for a reproducible local database. The result is easy to test and extend — auth,
+analytics, or a hosted database could be added behind the existing schema
+without touching the main frontend workflow.
+
+---
+
 ## 📸 Screenshots
 
 > _Add screenshots here._
