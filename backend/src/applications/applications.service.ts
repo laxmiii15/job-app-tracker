@@ -6,6 +6,7 @@ import { CreateApplicationInput } from './dto/create-application.input';
 import { PaginatedApplications } from './dto/paginated-applications.output';
 import { UpdateApplicationInput } from './dto/update-application.input';
 import { Application } from './entities/application.entity';
+import { StageLog } from './entities/stage-log.entity';
 
 @Injectable()
 export class ApplicationsService {
@@ -31,9 +32,11 @@ export class ApplicationsService {
     if (filter?.search) {
       const search = filter.search.trim();
       if (search.length > 0) {
+        // SQLite's LIKE (Prisma `contains`) is case-insensitive for ASCII by
+        // default and does not support the `mode: 'insensitive'` option.
         where.OR = [
-          { companyName: { contains: search, mode: 'insensitive' } },
-          { jobTitle: { contains: search, mode: 'insensitive' } },
+          { companyName: { contains: search } },
+          { jobTitle: { contains: search } },
         ];
       }
     }
@@ -49,7 +52,9 @@ export class ApplicationsService {
     ]);
 
     return {
-      data,
+      // SQLite stores status/jobType as plain strings; they are validated as
+      // enums on input, so it is safe to surface them as the enum-typed entity.
+      data: data as Application[],
       meta: {
         total,
         page,
@@ -68,7 +73,7 @@ export class ApplicationsService {
       throw new NotFoundException(`Application with id "${id}" was not found.`);
     }
 
-    return application;
+    return application as Application;
   }
 
   async create(input: CreateApplicationInput): Promise<Application> {
@@ -85,7 +90,7 @@ export class ApplicationsService {
           create: { toStatus: input.status ?? 'PENDING' },
         },
       },
-    });
+    }) as Promise<Application>;
   }
 
   async update(
@@ -119,14 +124,14 @@ export class ApplicationsService {
             }
           : {}),
       },
-    });
+    }) as Promise<Application>;
   }
 
-  findStageLogs(applicationId: string) {
+  findStageLogs(applicationId: string): Promise<StageLog[]> {
     return this.prisma.stageLog.findMany({
       where: { applicationId },
       orderBy: { changedAt: 'asc' },
-    });
+    }) as Promise<StageLog[]>;
   }
 
   async remove(id: string): Promise<boolean> {

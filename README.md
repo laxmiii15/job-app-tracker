@@ -5,7 +5,7 @@ with **table** and **kanban** views, search, filters, pagination, and a polished
 red-themed UI.
 
 Built with **Next.js**, **NestJS**, **GraphQL (code-first)**, **Prisma**, and
-**PostgreSQL**.
+**SQLite**.
 
 ---
 
@@ -50,7 +50,7 @@ Built with **Next.js**, **NestJS**, **GraphQL (code-first)**, **Prisma**, and
 | API client | Apollo Client · react-hot-toast                     |
 | Backend    | NestJS 10 · GraphQL (Apollo Driver, code-first)     |
 | ORM        | Prisma 5                                            |
-| Database   | PostgreSQL 16                                        |
+| Database   | SQLite (file-based, zero-setup)                     |
 | Validation | class-validator · class-transformer                 |
 
 ---
@@ -58,7 +58,7 @@ Built with **Next.js**, **NestJS**, **GraphQL (code-first)**, **Prisma**, and
 ## 🏛️ Architecture
 
 A full-stack app with a Next.js + TypeScript frontend and a NestJS + TypeScript
-backend that communicate over GraphQL, with PostgreSQL through Prisma for
+backend that communicate over GraphQL, with SQLite through Prisma for
 storage. The frontend owns the UI — table and Kanban views, drag-and-drop stage
 changes, modals, search, filtering, and loading/error states — while the backend
 exposes typed queries and mutations for all CRUD. GraphQL was chosen so every
@@ -67,11 +67,12 @@ history) from one typed contract, and a separate append-only `stage_logs` table
 records each status change with a timestamp. Validation runs on both sides: the
 form gives quick feedback, but the backend validates every mutation before
 saving and stays the source of truth, so the UI always refreshes from the API
-after any change. Postgres + Prisma fits the one-to-many history relation
-cleanly and gives typed queries plus versioned migrations, with Docker Compose
-for a reproducible local database. The result is easy to test and extend — auth,
-analytics, or a hosted database could be added behind the existing schema
-without touching the main frontend workflow.
+after any change. SQLite + Prisma fits the one-to-many history relation
+cleanly and gives typed queries plus versioned migrations, with the database
+living in a single local file (`backend/prisma/dev.db`) so there's nothing to
+install or run. The result is easy to test and extend — auth, analytics, or a
+hosted database could be added behind the existing schema without touching the
+main frontend workflow.
 
 ---
 
@@ -93,10 +94,10 @@ without touching the main frontend workflow.
 
 ```
 job-app-tracker/
-├── docker-compose.yml          # PostgreSQL service
 ├── backend/                    # NestJS + GraphQL + Prisma API
 │   ├── prisma/
-│   │   ├── schema.prisma       # snake_case DB mapping
+│   │   ├── schema.prisma       # snake_case DB mapping (SQLite)
+│   │   ├── dev.db              # SQLite database file (git-ignored)
 │   │   ├── migrations/         # SQL migration
 │   │   └── seed.ts             # sample data for every stage
 │   └── src/
@@ -117,7 +118,9 @@ job-app-tracker/
 ## ✅ Prerequisites
 
 - **Node.js** 18+ and npm
-- **Docker** + Docker Compose (for PostgreSQL) — or your own local PostgreSQL
+
+No database server is required — SQLite stores everything in a local file that
+Prisma creates for you.
 
 ---
 
@@ -126,7 +129,7 @@ job-app-tracker/
 ### `backend/.env`
 
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/job_tracker?schema=public"
+DATABASE_URL="file:./dev.db"
 PORT=3001
 CORS_ORIGIN="http://localhost:3000"
 NODE_ENV=development
@@ -149,20 +152,14 @@ cp frontend/.env.example frontend/.env.local
 
 ## 🚀 Getting Started
 
-### 1. Start PostgreSQL
-
-```bash
-docker compose up -d
-```
-
-### 2. Backend setup
+### 1. Backend setup
 
 ```bash
 cd backend
 npm install
 cp .env.example .env
 
-# Generate Prisma client + apply the migration
+# Generate Prisma client + create the SQLite db and apply the migration
 npm run prisma:generate
 npm run prisma:deploy        # or: npm run prisma:migrate (dev)
 
@@ -176,7 +173,7 @@ npm run start:dev
 The GraphQL API is now available at **http://localhost:3001/graphql**
 (Apollo Sandbox is enabled in development).
 
-### 3. Frontend setup
+### 2. Frontend setup
 
 ```bash
 cd frontend

@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ApplicationStatus, JobType } from '@prisma/client';
+import { ApplicationStatus } from './enums/application-status.enum';
+import { JobType } from './enums/job-type.enum';
 import { PrismaService } from '../prisma/prisma.service';
 import { ApplicationsService } from './applications.service';
 

@@ -1,4 +1,6 @@
-import { PrismaClient, JobType, ApplicationStatus } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import { JobType } from '../src/applications/enums/job-type.enum';
+import { ApplicationStatus } from '../src/applications/enums/application-status.enum';
 
 const prisma = new PrismaClient();
 
